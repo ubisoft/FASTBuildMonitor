@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:FASTBuildMonitorStandalone"
         mc:Ignorable="d"
-        Title="MainWindow" Height="440" Width="800">
+        Title="FastBuild Monitor" Height="440" Width="800">
     <Grid>
         
     </Grid>
