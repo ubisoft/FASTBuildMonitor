@@ -6,9 +6,6 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FASTBuildMonitorVSIX", "FASTBuildMonitorVSIX\FASTBuildMonitorVSIX.csproj", "{E50A8B0A-8964-4ADB-B504-71DD7228B20A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FASTBuildMonitorStandalone", "FASTBuildMonitorStandalone\FASTBuildMonitorStandalone.csproj", "{D15FA9F3-2B94-495E-A53A-576DFBA6D1F3}"
-	ProjectSection(ProjectDependencies) = postProject
-		{E50A8B0A-8964-4ADB-B504-71DD7228B20A} = {E50A8B0A-8964-4ADB-B504-71DD7228B20A}
-	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

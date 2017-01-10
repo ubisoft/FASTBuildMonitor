@@ -53,11 +53,6 @@
     <ApplicationIcon>Resources\green.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="FASTBuildMonitorVSIX, Version=1.0.0.0, Culture=neutral, PublicKeyToken=8ac6d86db75e8ff4, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\FASTBuildMonitorVSIX\lib\$(ConfigurationName)\FASTBuildMonitorVSIX.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
@@ -132,7 +127,13 @@
       <Install>false</Install>
     </BootstrapperPackage>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="..\FASTBuildMonitorVSIX\FASTBuildMonitorVSIX.csproj">
+      <Project>{e50a8b0a-8964-4adb-b504-71dd7228b20a}</Project>
+      <Name>FASTBuildMonitorVSIX</Name>
+      <Private>False</Private>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>copy  /Y  $(SolutionDir)$(SolutionName)\lib\$(ConfigurationName)\$(SolutionName).*  $(TargetDir)
