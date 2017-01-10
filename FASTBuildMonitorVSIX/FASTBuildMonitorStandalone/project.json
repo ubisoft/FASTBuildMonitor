@@ -1,0 +1,11 @@
+﻿{
+  "dependencies": {
+    "Hardcodet.NotifyIcon.Wpf": "1.0.8",
+  },
+  "frameworks": {
+    "net452": {}
+  },
+  "runtimes": {
+    "win": {}
+  }
+}

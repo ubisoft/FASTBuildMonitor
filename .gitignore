@@ -12,3 +12,6 @@ FASTBuildMonitorVSIX/.vs/FASTBuildMonitorVSIX/v15/Server/sqlite3/storage.ide
 
 # Ignore .user files
 *.user
+
+# Ignore .lock.json file(Visual Studio nuget local state file that must NOT be in source control)
+*.lock.json

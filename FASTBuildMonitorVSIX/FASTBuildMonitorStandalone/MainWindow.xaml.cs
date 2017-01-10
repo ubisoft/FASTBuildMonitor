@@ -13,6 +13,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using FASTBuildMonitorVSIX;
+using Hardcodet.Wpf.TaskbarNotification;
 
 namespace FASTBuildMonitorStandalone
 {
@@ -21,11 +22,35 @@ namespace FASTBuildMonitorStandalone
     /// </summary>
     public partial class MainWindow : Window
     {
+        public static MainWindow Window = null;
         public MainWindow()
         {
+            Window = this;
             InitializeComponent();
 
             this.Content = new FASTBuildMonitorVSIX.FASTBuildMonitorControl();
         }
     }
+
+    /// <summary>
+    /// This simple class is used to handle click and double click on the tray icon(this restore and minimize the app window)
+    /// </summary>
+    public class ClickTrayIcon : ICommand
+    {
+        public void Execute(object parameter)
+        {
+            if (MainWindow.Window.WindowState == WindowState.Minimized)
+                MainWindow.Window.WindowState = WindowState.Normal;
+            else
+                MainWindow.Window.WindowState = WindowState.Minimized;
+        }
+
+        public bool CanExecute(object parameter)
+        {
+            return true;
+        }
+
+        public event EventHandler CanExecuteChanged;
+    }
+
 }
