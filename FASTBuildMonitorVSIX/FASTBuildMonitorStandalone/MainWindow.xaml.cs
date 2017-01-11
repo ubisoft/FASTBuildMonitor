@@ -29,6 +29,20 @@ namespace FASTBuildMonitorStandalone
             InitializeComponent();
 
             this.Content = new FASTBuildMonitorVSIX.FASTBuildMonitorControl();
+
+            this.StateChanged += Window_StateChanged;
+        }
+
+        private void Window_StateChanged(object sender, EventArgs e)
+        {
+            if (this.WindowState == WindowState.Minimized)
+            {
+                this.ShowInTaskbar = false;
+            }
+            else 
+            {
+                this.ShowInTaskbar = true;
+            }
         }
     }
 
