@@ -2082,6 +2082,12 @@ namespace FASTBuildMonitorVSIX
                     Directory.CreateDirectory(System.IO.Path.GetDirectoryName(path));
                 }
 
+                if (!File.Exists(path))
+                {
+                    // the log file does not exist, bail out...
+                    return;
+                }
+
                 try
                 {
                     _fileStream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
@@ -2090,7 +2096,6 @@ namespace FASTBuildMonitorVSIX
                 catch (System.Exception ex)
                 {
                     Console.WriteLine("Exception! " + ex.ToString());
-                    // the log file does not exist, bail out...
                     return;
                 }
             }
