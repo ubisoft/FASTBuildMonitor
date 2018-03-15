@@ -72,7 +72,7 @@
                     </ScrollViewer>
                     <TreeView x:Name="graphsSelectionTreeView" BorderBrush="#FFDEE2EA" Visibility =" Hidden" Margin="0,0,0,0" Grid.Row="0" Grid.Column="0" Height="150"/>
                     <ScrollViewer x:Name="CoresScrollViewer" ScrollViewer.HorizontalScrollBarVisibility="Hidden" ScrollViewer.VerticalScrollBarVisibility="Hidden" Margin="10,10,10,25" Grid.Row="2" Grid.Column="0" >
-                        <Canvas x:Name="CoresCanvas" HorizontalAlignment="Left" Height="366" VerticalAlignment="Top" Width="148" Margin="0,0,0,0"/>
+                        <Canvas x:Name="CoresCanvas" HorizontalAlignment="Left" Height="366" VerticalAlignment="Top" Width="160" Margin="0,0,0,0"/>
                     </ScrollViewer>
                 </Grid>
             </TabItem>
@@ -104,7 +104,10 @@
                         <RowDefinition/>
                     </Grid.RowDefinitions>
                     <GroupBox x:Name="SettingsGroupBox" Header="Settings" HorizontalAlignment="Left" Margin="26,0,0,0" VerticalAlignment="Top" Height="92" Width="165">
-                        <CheckBox x:Name="SettingsGraphsCheckBox" Content="Show System Graphs" HorizontalAlignment="Left" Margin="10,22,0,0" VerticalAlignment="Top" Checked="checkBox_Checked" Unchecked="checkBox_Unchecked"/>
+                        <Grid >
+                            <CheckBox x:Name="SettingsGraphsCheckBox" Content="Show System Graphs" HorizontalAlignment="Left" Margin="10,22,0,0" VerticalAlignment="Top" Checked="checkBox_Changed" Unchecked="checkBox_Changed"/>
+                            <CheckBox x:Name="MiniBarsModeCheckBox" Content="Enable mini bars mode" HorizontalAlignment="Left" Margin="10,44,0,0" VerticalAlignment="Top" Checked="checkBox_Changed" Unchecked="checkBox_Changed"/>
+                        </Grid>
                     </GroupBox>
                     <GroupBox x:Name="AboutGroupBox" Header="About" Margin="26,10,397,0" Height ="Auto"  Grid.Row="1" VerticalAlignment="Top">
                         <Grid >

@@ -36,6 +36,11 @@ namespace FASTBuildMonitorVSIX
 
         public static FASTBuildMonitorControl _StaticWindow = null;
 
+        private const int _normalBarHeight = 20;
+        private const int _miniBarHeight = 4;
+
+        public bool MiniBarsActive = false;
+
         public FASTBuildMonitorControl()
         {
             _StaticWindow = this;
@@ -45,6 +50,11 @@ namespace FASTBuildMonitorVSIX
 
             // Our internal init
             InitializeInternalState();
+        }
+
+        public int GetBarHeight()
+        {
+            return MiniBarsActive ? _miniBarHeight : _normalBarHeight;
         }
 
         private void InitializeInternalState()
@@ -98,16 +108,19 @@ namespace FASTBuildMonitorVSIX
         }
 
         /* Settings Tab Check boxes */
-        private void checkBox_Checked(object sender, RoutedEventArgs e)
+        private void checkBox_Changed(object sender, RoutedEventArgs e)
         {
-            _systemPerformanceGraphs.SetVisibility((bool)(sender as CheckBox).IsChecked);
-        }
+            _systemPerformanceGraphs.SetVisibility((bool)SettingsGraphsCheckBox.IsChecked);
 
-        private void checkBox_Unchecked(object sender, RoutedEventArgs e)
-        {
-            _systemPerformanceGraphs.SetVisibility((bool)(sender as CheckBox).IsChecked);
-        }
+            bool miniBarsChecked = MiniBarsModeCheckBox.IsChecked != null && (bool)MiniBarsModeCheckBox.IsChecked;
+            if (MiniBarsActive != miniBarsChecked)
+            {
+                MiniBarsActive = miniBarsChecked;
 
+                BuildEvent.InitOrUpdateRaceBrushes();
+                SetConditionalRenderUpdateFlag(true);
+            }
+        }
 
         /* Output Window ESC */
         private void OutputTextBox_KeyDown(object sender, KeyEventArgs e)
@@ -1087,7 +1100,6 @@ namespace FASTBuildMonitorVSIX
                 _visibleElements.Clear();
             }
 
-
             //......................
             public CPUCore(BuildHost parent, int coreIndex)
             {
@@ -1095,14 +1107,12 @@ namespace FASTBuildMonitorVSIX
 
                 _coreIndex = coreIndex;
 
-                _textBlock.Text = string.Format("{0} (Core # {1})", parent._name, _coreIndex);
-
                 _StaticWindow.CoresCanvas.Children.Add(_textBlock);
 
                 _StaticWindow.EventsCanvas.Children.Add(this);
 
 
-                this.Height = pix_height;
+                this.Height = _StaticWindow.GetBarHeight();
 
                 if (_sLODImage == null)
                 {
@@ -1174,7 +1184,7 @@ namespace FASTBuildMonitorVSIX
                         brush.AlignmentY = AlignmentY.Top;
                         brush.AlignmentX = AlignmentX.Left;
                         brush.ViewportUnits = BrushMappingMode.Absolute;
-                        brush.Viewport = new Rect(0, 0, 40, 20);
+                        brush.Viewport = new Rect(0, 0, 40, _StaticWindow.GetBarHeight());
 
                         dc.DrawRectangle(brush, new Pen(Brushes.Black, 1), _currentLODRect);
 
@@ -1218,11 +1228,37 @@ namespace FASTBuildMonitorVSIX
                 return false;
             }
 
-            public void RenderUpdate(ref double X, ref double Y)
+            public void RenderUpdate(bool showText, bool showIndividualCore, ref double X, ref double Y)
             {
+                double barsHeight = _StaticWindow.GetBarHeight();
+                if (this.Height != barsHeight)
+                {
+                    // refresh if bar height just changed
+                    this.Height = barsHeight;
+                }
+
                 // WPF Layout update
-                Canvas.SetLeft(_textBlock, X);
-                Canvas.SetTop(_textBlock, Y + 2);
+                if (showText)
+                {
+                    _textBlock.Visibility = Visibility.Visible;
+
+                    if (showIndividualCore)
+                    {
+                        _textBlock.Text = $"{_parent._name}  (Core # {_coreIndex})";
+                    }
+                    else
+                    {
+                        int nbCores = _parent._cores.Count;
+                        _textBlock.Text = $"{_parent._name} ({nbCores} core{(nbCores != 1 ? "s" : "")})";
+                    }
+
+                    Canvas.SetLeft(_textBlock, X);
+                    Canvas.SetTop(_textBlock, Y + 2);
+                }
+                else
+                {
+                    _textBlock.Visibility = Visibility.Hidden;
+                }
 
                 if (_x != X)
                 {
@@ -1251,7 +1287,7 @@ namespace FASTBuildMonitorVSIX
 
                 X = this.Width = X + relX + 40.0f;
 
-                Y += 25;
+                Y += _StaticWindow.GetBarHeight() + (_StaticWindow.MiniBarsActive ? 2 : 5);
             }
         }
 
@@ -1390,20 +1426,32 @@ namespace FASTBuildMonitorVSIX
             {
                 double maxX = 0.0f;
 
+                double textHeight = 16;
+
+                bool showIndividualCores = !_StaticWindow.MiniBarsActive;
+                double barsHeight = (double)_StaticWindow.GetBarHeight();
+
                 //update all cores
                 foreach (CPUCore core in _cores)
                 {
                     double localX = X;
+                    double localY = Y;
 
-                    core.RenderUpdate(ref localX, ref Y);
+                    core.RenderUpdate(showIndividualCores || ReferenceEquals(core, _cores[0]), showIndividualCores, ref localX, ref Y);
+
+                    double currentHeight = Y - localY;
+                    textHeight -= currentHeight;
 
                     maxX = Math.Max(maxX, localX);
                 }
 
-                //adjust the dynamic line separator
-                _lineSeparator.Y1 = _lineSeparator.Y2 = Y + 10;
+                if (textHeight > 0)
+                    Y += textHeight + 2;
 
-                Y += 20;
+                //adjust the dynamic line separator
+                _lineSeparator.Y1 = _lineSeparator.Y2 = Y + barsHeight / 2;
+
+                Y += barsHeight;
 
                 UpdateEventsCanvasMaxSize(X, Y);
             }
@@ -1423,7 +1471,6 @@ namespace FASTBuildMonitorVSIX
 
         public const double pix_space_between_events = 2;
         public const double pix_per_second = 20.0f;
-        public const double pix_height = 20;
         public const double pix_LOD_Threshold = 2.0f;
 
         const double toolTip_TimeThreshold = 1.0f; //in Seconds
@@ -1505,9 +1552,9 @@ namespace FASTBuildMonitorVSIX
             public static ImageBrush _sFailedBrush = new ImageBrush();
             public static ImageBrush _sTimeoutBrush = new ImageBrush();
             public static ImageBrush _sRunningBrush = new ImageBrush();
-			public static ImageBrush _sRacingIconBrush = new ImageBrush();
-			public static ImageBrush _sRacingWinIconBrush = new ImageBrush();
-			public static ImageBrush _sRacingLostIconBrush = new ImageBrush();
+            public static Brush _sRacingIconBrush;
+            public static Brush _sRacingWinIconBrush;
+            public static Brush _sRacingLostIconBrush;
 
 			// Constants
 			private const int _cTextLabeloffset_X = 4;
@@ -1526,11 +1573,26 @@ namespace FASTBuildMonitorVSIX
                 _sFailedBrush.ImageSource = GetBitmapImage(FASTBuildMonitorVSIX.Resources.Images.Failed);
                 _sTimeoutBrush.ImageSource = GetBitmapImage(FASTBuildMonitorVSIX.Resources.Images.Timeout);
                 _sRunningBrush.ImageSource = GetBitmapImage(FASTBuildMonitorVSIX.Resources.Images.Running);
-				_sRacingIconBrush.ImageSource = GetBitmapImage(FASTBuildMonitorVSIX.Resources.Images.race_flag);
-				_sRacingWinIconBrush.ImageSource = GetBitmapImage(FASTBuildMonitorVSIX.Resources.Images.race_flag_win);
-				_sRacingLostIconBrush.ImageSource = GetBitmapImage(FASTBuildMonitorVSIX.Resources.Images.race_flag_lost);
 
-				_sbInitialized = true;
+                InitOrUpdateRaceBrushes();
+
+                _sbInitialized = true;
+            }
+
+            public static void InitOrUpdateRaceBrushes()
+            {
+                if (!_StaticWindow.MiniBarsActive)
+                {
+                    _sRacingIconBrush = new ImageBrush(GetBitmapImage(FASTBuildMonitorVSIX.Resources.Images.race_flag));
+                    _sRacingWinIconBrush = new ImageBrush(GetBitmapImage(FASTBuildMonitorVSIX.Resources.Images.race_flag_win));
+                    _sRacingLostIconBrush = new ImageBrush(GetBitmapImage(FASTBuildMonitorVSIX.Resources.Images.race_flag_lost));
+                }
+                else
+                {
+                    _sRacingIconBrush = Brushes.Gray;
+                    _sRacingWinIconBrush = Brushes.GreenYellow;
+                    _sRacingLostIconBrush = Brushes.DarkOliveGreen;
+                }
             }
 
             public BuildEvent(string name, Int64 timeStarted)
@@ -1741,7 +1803,8 @@ namespace FASTBuildMonitorVSIX
 
                     borderRectWidth = OriginalWidthInPixels + pix_per_second * cTimeStepMS / 1000.0f;
 
-                    borderRectWidth = Math.Max(Math.Min(_cMinTextLabelWidthThreshold * 2, textSize.X), borderRectWidth);
+                    if (!_StaticWindow.MiniBarsActive)
+                        borderRectWidth = Math.Max(Math.Min(_cMinTextLabelWidthThreshold * 2, textSize.X), borderRectWidth);
 
                     _toolTipText = "BUILDING: " + _name.Replace("\"", "") + "\nTime Elapsed: " + GetTimeFormattedString(duration);
                 }
@@ -1771,8 +1834,9 @@ namespace FASTBuildMonitorVSIX
                 bool isInLowLOD = (AdjustedWidthInPixels <= pix_LOD_Threshold) && bIsCompleted;
 
                 // Update the element size and figure out of anything changed since the last update
-                Rect newBorderRect = new Rect(X, Y, borderRectWidth, pix_height);
-                Rect newProgressRect = new Rect(X, Y, AdjustedWidthInPixels, pix_height);
+                int barHeight = _StaticWindow.GetBarHeight();
+                Rect newBorderRect = new Rect(X, Y, borderRectWidth, barHeight);
+                Rect newProgressRect = new Rect(X, Y, AdjustedWidthInPixels, barHeight);
 
                 _isDirty = !_bordersRect.Equals(newBorderRect) || !_progressRect.Equals(newProgressRect) || isInLowLOD != _isInLowLOD;
 
@@ -1887,6 +1951,8 @@ namespace FASTBuildMonitorVSIX
 
                         SolidColorBrush colorBrush = Brushes.Black;
 
+                        bool showRaceIcon = false;
+
                         if (_state == BuildEventState.IN_PROGRESS)
                         {
                             // Draw an open rectangle
@@ -1901,14 +1967,21 @@ namespace FASTBuildMonitorVSIX
                             dc.DrawLine(pen, P0, P3);
                             dc.DrawLine(pen, P3, P2);
 
-							if (_isRacingJob && _progressRect.Width >= _cRacingIconWidth)
-							{
-								Rect racingIconRect = new Rect(_progressRect.X, _progressRect.Y, _cRacingIconWidth, _progressRect.Height);
-
-								dc.DrawImage(_sRacingIconBrush.ImageSource, racingIconRect);
-							}
-						}
-						else
+                            if (_isRacingJob && _progressRect.Width >= _cRacingIconWidth)
+                            {
+                                showRaceIcon = true;
+                                Rect racingIconRect = new Rect(_progressRect.X + 1, _progressRect.Y + 1, _cRacingIconWidth, _progressRect.Height - 2);
+                                if (_sRacingIconBrush is ImageBrush)
+                                {
+                                    dc.DrawImage(((ImageBrush)_sRacingIconBrush).ImageSource, racingIconRect);
+                                }
+                                else
+                                {
+                                    dc.DrawRectangle(_sRacingIconBrush, null, racingIconRect);
+                                }
+                            }
+                        }
+                        else
                         {
                             switch(_state)
                             {
@@ -1920,24 +1993,26 @@ namespace FASTBuildMonitorVSIX
 
                             dc.DrawRectangle(new VisualBrush(), new Pen(Brushes.Gray, 1), _bordersRect);
 
-							if (_isRacingJob && _progressRect.Width >= _cRacingIconWidth)
-							{
-								Rect racingIconRect = new Rect(_progressRect.X, _progressRect.Y, _cRacingIconWidth, _progressRect.Height);
+                            if (_isRacingJob && _progressRect.Width >= _cRacingIconWidth)
+                            {
+                                Rect racingIconRect = new Rect(_progressRect.X + 1, _progressRect.Y + 1, _cRacingIconWidth, _progressRect.Height - 2);
+                                showRaceIcon = true;
 
-								if(_wonRace)
-								{
-									dc.DrawImage(_sRacingWinIconBrush.ImageSource, racingIconRect);
-								}
-								else
-								{
-									dc.DrawImage(_sRacingLostIconBrush.ImageSource, racingIconRect);
-								}
-							}
-						}
+                                var brush = _wonRace ? _sRacingWinIconBrush : _sRacingLostIconBrush;
+                                if (brush is ImageBrush)
+                                {
+                                    dc.DrawImage(((ImageBrush) brush).ImageSource, racingIconRect);
+                                }
+                                else
+                                {
+                                    dc.DrawRectangle(brush, null, racingIconRect);
+                                }
+                            }
+                        }
 
-						string textToDisplay = null;
+                        string textToDisplay = null;
 
-						double textWidthThreshold = _cMinTextLabelWidthThreshold + (_isRacingJob ? _cRacingIconWidth : 0.0f);
+                        double textWidthThreshold = _cMinTextLabelWidthThreshold + (showRaceIcon ? _cRacingIconWidth : 0.0f);
 
                         if (_bordersRect.Width > textWidthThreshold)
                         {
@@ -1948,14 +2023,14 @@ namespace FASTBuildMonitorVSIX
                         //    textToDisplay = "...";
                         //}
 
-                        if (textToDisplay != null)
+                        if (textToDisplay != null && !_StaticWindow.MiniBarsActive)
                         {
 #if ENABLE_RENDERING_STATS
                         _StaticWindow._numTextElementsDrawn++;
 #endif
-                            double allowedTextWidth = Math.Max(0.0f, _bordersRect.Width - 2 * _cTextLabeloffset_X - (_isRacingJob? _cRacingIconWidth : 0.0f));
+                            double allowedTextWidth = Math.Max(0.0f, _bordersRect.Width - 2 * _cTextLabeloffset_X - (showRaceIcon ? _cRacingIconWidth : 0.0f));
 
-							double textXOffset = _bordersRect.X + _cTextLabeloffset_X + (_isRacingJob?_cRacingIconWidth : 0.0f);
+                            double textXOffset = _bordersRect.X + _cTextLabeloffset_X + (showRaceIcon ? _cRacingIconWidth : 0.0f);
 
 							TextUtils.DrawText(dc, textToDisplay, textXOffset, _bordersRect.Y + _cTextLabeloffset_Y, allowedTextWidth, true, colorBrush);
                         }
