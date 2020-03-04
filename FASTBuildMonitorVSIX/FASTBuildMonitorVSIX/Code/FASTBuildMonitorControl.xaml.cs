@@ -23,6 +23,8 @@ using System.Collections.ObjectModel;
 using System.Globalization;
 using EnvDTE;
 using EnvDTE80;
+using Microsoft.VisualStudio.Shell;
+using Microsoft.Win32;
 
 namespace FASTBuildMonitorVSIX
 {
@@ -35,6 +37,8 @@ namespace FASTBuildMonitorVSIX
         private static List<Rectangle> _bars = new List<Rectangle>();
 
         public static FASTBuildMonitorControl _StaticWindow = null;
+
+        public ResourceDictionary Theme => Resources.MergedDictionaries[0];
 
         private const int _normalBarHeight = 20;
         private const int _miniBarHeight = 4;
@@ -63,7 +67,7 @@ namespace FASTBuildMonitorVSIX
             TextUtils.StaticInitialize();
 
             // Time bar display
-            _timeBar = new TimeBar(TimeBarCanvas);
+            _timeBar = new TimeBar(TimeBarCanvas, Theme);
 
             // System Graphs display
             _systemPerformanceGraphs = new SystemPerformanceGraphsCanvas(SystemGraphsCanvas);
@@ -99,6 +103,7 @@ namespace FASTBuildMonitorVSIX
 
             SettingsGraphsCheckBox.IsChecked = LoadSetting(nameof(SettingsGraphsCheckBox));
             MiniBarsModeCheckBox.IsChecked = LoadSetting(nameof(MiniBarsModeCheckBox));
+            SettingsDarkTheme.IsChecked = LoadSetting(nameof(SettingsDarkTheme));
 
             Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(() =>
             {
@@ -135,6 +140,10 @@ namespace FASTBuildMonitorVSIX
                             SetConditionalRenderUpdateFlag(true);
                         }
                     }
+                    break;
+
+                case nameof(SettingsDarkTheme):
+                    UpdateTheme();
                     break;
 
                 default:
@@ -223,6 +232,33 @@ namespace FASTBuildMonitorVSIX
                         Console.WriteLine("Exception! " + ex.ToString());
                     }
                 }
+            }
+        }
+
+        public void UpdateTheme()
+        {
+            var isDark = SettingsDarkTheme.IsChecked == true;
+
+            Resources.MergedDictionaries.Clear();
+            Resources.MergedDictionaries.Add(isDark
+                ? new ResourceDictionary()
+                {
+                    Source = new Uri(
+                        "pack://application:,,,/FASTBuildMonitorVSIX;component/Resources/Themes/DarkTheme.xaml")
+                }
+                : new ResourceDictionary()
+                {
+                    Source = new Uri(
+                        "pack://application:,,,/FASTBuildMonitorVSIX;component/Resources/Themes/DefaultTheme.xaml")
+                });
+
+            _timeBar.UpdateTheme(Theme);
+            _localHost?.UpdateTheme(Theme);
+
+            foreach (DictionaryEntry entry in _hosts)
+            {
+                var host = entry.Value as BuildHost;
+                host?.UpdateTheme(Theme);
             }
         }
 
@@ -812,7 +848,7 @@ namespace FASTBuildMonitorVSIX
             _StaticWindow.CoresCanvas.Children.Clear();
 
             // Start by adding a local host
-            _localHost = new BuildHost(_cLocalHostName);
+            _localHost = new BuildHost(_cLocalHostName, Theme);
             _hosts.Add(_cLocalHostName, _localHost);
 
             // Always add the prepare build steps event first
@@ -1277,7 +1313,7 @@ namespace FASTBuildMonitorVSIX
                 return false;
             }
 
-            public void RenderUpdate(bool showText, bool showIndividualCore, ref double X, ref double Y)
+            public void RenderUpdate(bool showText, bool showIndividualCore, ref double X, ref double Y, ResourceDictionary theme)
             {
                 double barsHeight = _StaticWindow.GetBarHeight();
                 if (this.Height != barsHeight)
@@ -1300,6 +1336,7 @@ namespace FASTBuildMonitorVSIX
                         int nbCores = _parent._cores.Count;
                         _textBlock.Text = $"{_parent._name} ({nbCores} core{(nbCores != 1 ? "s" : "")})";
                     }
+                    UpdateTheme(theme);
 
                     Canvas.SetLeft(_textBlock, X);
                     Canvas.SetTop(_textBlock, Y + 2);
@@ -1338,6 +1375,11 @@ namespace FASTBuildMonitorVSIX
 
                 Y += _StaticWindow.GetBarHeight() + (_StaticWindow.MiniBarsActive ? 2 : 5);
             }
+
+            public void UpdateTheme(ResourceDictionary theme)
+            {
+                _textBlock.Foreground = theme["ForegroundColor"] as SolidColorBrush;
+            }
         }
 
 
@@ -1350,9 +1392,12 @@ namespace FASTBuildMonitorVSIX
             //WPF stuff
             public Line _lineSeparator = new Line();
 
-            public BuildHost(string name)
+            private ResourceDictionary _theme;
+
+            public BuildHost(string name, ResourceDictionary theme)
             {
                 _name = name;
+                _theme = theme;
 
                 bLocalHost = name.Contains(_cLocalHostName);
 
@@ -1486,7 +1531,7 @@ namespace FASTBuildMonitorVSIX
                     double localX = X;
                     double localY = Y;
 
-                    core.RenderUpdate(showIndividualCores || ReferenceEquals(core, _cores[0]), showIndividualCores, ref localX, ref Y);
+                    core.RenderUpdate(showIndividualCores || ReferenceEquals(core, _cores[0]), showIndividualCores, ref localX, ref Y, _theme);
 
                     double currentHeight = Y - localY;
                     textHeight -= currentHeight;
@@ -1503,6 +1548,15 @@ namespace FASTBuildMonitorVSIX
                 Y += barsHeight;
 
                 UpdateEventsCanvasMaxSize(X, Y);
+            }
+
+            public void UpdateTheme(ResourceDictionary theme)
+            {
+                _theme = theme;
+                foreach (var core in _cores)
+                {
+                    core.UpdateTheme(theme);
+                }
             }
         }
 
@@ -2436,7 +2490,7 @@ namespace FASTBuildMonitorVSIX
             else
             {
                 // discovered a new host!
-                host = new BuildHost(hostName);
+                host = new BuildHost(hostName, Theme);
                 _hosts.Add(hostName, host);
             }
 

@@ -17,9 +17,10 @@ namespace FASTBuildMonitorVSIX
 {
     class TimeBar : Canvas
     {
-        public TimeBar(Canvas parentCanvas)
+        public TimeBar(Canvas parentCanvas, ResourceDictionary theme)
         {
             _parentCanvas = parentCanvas;
+            _theme = theme;
 
             this.Width = _parentCanvas.Width;
             this.Height = _parentCanvas.Height;
@@ -29,9 +30,10 @@ namespace FASTBuildMonitorVSIX
 
         protected override void OnRender(DrawingContext dc)
         {
-            dc.DrawGeometry(Brushes.Black, new Pen(Brushes.Black, 1), _geometry);
+            var color = _theme["ForegroundColor"] as SolidColorBrush;
+            dc.DrawGeometry(color, new Pen(color, 1), _geometry);
 
-            _textTags.ForEach(tag => TextUtils.DrawText(dc, tag._text, tag._x, tag._y, 100, false, Brushes.Black));
+            _textTags.ForEach(tag => TextUtils.DrawText(dc, tag._text, tag._x, tag._y, 100, false, color));
         }
 
         void UpdateGeometry(double X, double Y, double zoomFactor)
@@ -152,6 +154,12 @@ namespace FASTBuildMonitorVSIX
             }
         }
 
+        public void UpdateTheme(ResourceDictionary theme)
+        {
+            _theme = theme;
+            InvalidateVisual();
+        }
+
         private class TextTag
         {
             public TextTag(string text, double x, double y)
@@ -178,5 +186,6 @@ namespace FASTBuildMonitorVSIX
         Point _savedTimebarViewPort = new Point();
 
         Canvas _parentCanvas = null;
+        ResourceDictionary _theme = null;
     }
 }

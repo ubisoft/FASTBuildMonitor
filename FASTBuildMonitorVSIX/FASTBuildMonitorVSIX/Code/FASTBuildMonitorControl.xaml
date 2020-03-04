@@ -7,8 +7,21 @@
              mc:Ignorable="d"
              d:DesignHeight="440" d:DesignWidth="800"
              Name="MyToolWindow">
-    <DockPanel Margin="0,0,0,0">
-        <StatusBar x:Name="StatusBar" DockPanel.Dock="Bottom" >
+
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary>
+                    <ResourceDictionary.MergedDictionaries>
+                        <ResourceDictionary Source="pack://application:,,,/FASTBuildMonitorVSIX;component/Resources/Themes/DefaultTheme.xaml"/>
+                    </ResourceDictionary.MergedDictionaries>
+                </ResourceDictionary>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <DockPanel Margin="0,0,0,0" Background="{DynamicResource WindowBackground}">
+        <StatusBar x:Name="StatusBar" DockPanel.Dock="Bottom" Background="{DynamicResource StatusBarBrush}" >
             <StatusBar.ItemsPanel>
                 <ItemsPanelTemplate>
                     <Grid>
@@ -29,22 +42,24 @@
                 <my:GifImage x:Name="StatusBarRunningGif" Stretch="Uniform" GifSource="box" AutoStart="False" Margin="0,5,0,0" Height="20" VerticalAlignment="Top"/>
             </StatusBarItem>
             <StatusBarItem Grid.Column="1" >
-                <TextBlock x:Name="StatusBarBuildStatus" Text ="StatusBarBuildStatus"/>
+                <TextBlock x:Name="StatusBarBuildStatus" Text ="StatusBarBuildStatus" Foreground="{DynamicResource ForegroundColor}" />
             </StatusBarItem>
             <Separator BorderBrush="LightGray" Grid.Column="2" />
             <StatusBarItem Grid.Column="3">
-                <TextBlock x:Name="StatusBarDetails" Text ="StatusBarDetails"/>
+                <TextBlock x:Name="StatusBarDetails" Text ="StatusBarDetails" Foreground="{DynamicResource ForegroundColor}"/>
             </StatusBarItem>
             <Separator BorderBrush="LightGray" Grid.Column="4" />
             <StatusBarItem Grid.Column="5">
-                <TextBlock x:Name="StatusBarBuildTime" Text ="StatusBarBuildTime"/>
+                <TextBlock x:Name="StatusBarBuildTime" Text ="StatusBarBuildTime" Foreground="{DynamicResource ForegroundColor}"/>
             </StatusBarItem>
             <Separator BorderBrush="LightGray" Grid.Column="6" />
             <StatusBarItem Grid.Column="7">
                 <ProgressBar x:Name="StatusBarProgressBar" Value="0" Width="90" Height="16" />
             </StatusBarItem>
         </StatusBar>
-        <TabControl x:Name="MyTabControl" TabStripPlacement="Left" BorderBrush="#41020202" SelectionChanged="MyTabControl_SelectionChanged">
+        <TabControl x:Name="MyTabControl" TabStripPlacement="Left" BorderBrush="{DynamicResource TabControlBorderBrush}"
+                    Background="{DynamicResource TabControlBackgroundBrush}"
+                    SelectionChanged="MyTabControl_SelectionChanged">
             <TabItem x:Name="TabItemTimeBar" >
                 <TabItem.Header>
                     <StackPanel Orientation="Horizontal">
@@ -88,8 +103,10 @@
                         <RowDefinition/>
                     </Grid.RowDefinitions>
                     <ComboBox x:Name="OutputWindowComboBox" ItemsSource="{Binding FASTBuildMonitorControl._outputComboBoxFilters}" DisplayMemberPath="_name" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="330" Grid.Row="0" HorizontalContentAlignment="Left"/>
-                    <Label x:Name="label" Content="Press (SPACE) to reset filter" HorizontalAlignment="Left" Margin="345,10,0,0" VerticalAlignment="Top" Width="155" Grid.Row="0"/>
-                    <TextBox x:Name="OutputTextBox" AcceptsReturn="True"  HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" IsReadOnly="True" Grid.Row="1" Margin="0,0,10,0"/>
+                    <Label x:Name="label" Content="Press (SPACE) to reset filter" HorizontalAlignment="Left" Margin="345,10,0,0" VerticalAlignment="Top" Width="155" Grid.Row="0" Foreground="{DynamicResource ForegroundColor}"/>
+                    <TextBox x:Name="OutputTextBox" AcceptsReturn="True"  HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" IsReadOnly="True" Grid.Row="1" Margin="0,0,10,0"
+                             Background="{DynamicResource WindowBackground}"
+                             Foreground="{DynamicResource ForegroundColor}"/>
                 </Grid>
             </TabItem>
             <TabItem x:Name="TabItemSettings">
@@ -103,30 +120,31 @@
                         <RowDefinition Height="Auto" MinHeight="102"/>
                         <RowDefinition/>
                     </Grid.RowDefinitions>
-                    <GroupBox x:Name="SettingsGroupBox" Header="Settings" HorizontalAlignment="Left" Margin="26,0,0,0" VerticalAlignment="Top" Height="92" Width="165">
-                        <Grid >
-                            <CheckBox x:Name="SettingsGraphsCheckBox" Content="Show System Graphs" HorizontalAlignment="Left" Margin="10,22,0,0" VerticalAlignment="Top" Checked="checkBox_Changed" Unchecked="checkBox_Changed"/>
-                            <CheckBox x:Name="MiniBarsModeCheckBox" Content="Enable mini bars mode" HorizontalAlignment="Left" Margin="10,44,0,0" VerticalAlignment="Top" Checked="checkBox_Changed" Unchecked="checkBox_Changed"/>
-                        </Grid>
+                    <GroupBox x:Name="SettingsGroupBox" Header="Settings" HorizontalAlignment="Left" Margin="26,0,0,0" VerticalAlignment="Top" Height="Auto" Width="Auto" Foreground="{DynamicResource ForegroundColor}">
+                        <StackPanel>
+                            <CheckBox x:Name="SettingsGraphsCheckBox" Content="Show System Graphs" HorizontalAlignment="Left" Margin="8" VerticalAlignment="Top" Checked="checkBox_Changed" Unchecked="checkBox_Changed" Foreground="{DynamicResource ForegroundColor}"/>
+                            <CheckBox x:Name="SettingsDarkTheme" Content="Use Dark Theme" HorizontalAlignment="Left" Margin="8" VerticalAlignment="Top" Checked="checkBox_Changed" Unchecked="checkBox_Changed" Foreground="{DynamicResource ForegroundColor}"/>
+                            <CheckBox x:Name="MiniBarsModeCheckBox" Content="Enable mini bars mode" HorizontalAlignment="Left" Margin="8" VerticalAlignment="Top" Checked="checkBox_Changed" Unchecked="checkBox_Changed" Foreground="{DynamicResource ForegroundColor}"/>
+                        </StackPanel>
                     </GroupBox>
-                    <GroupBox x:Name="AboutGroupBox" Header="About" Margin="26,10,397,0" Height ="Auto"  Grid.Row="1" VerticalAlignment="Top">
+                    <GroupBox x:Name="AboutGroupBox" Header="About" Margin="26,10,397,0" Height ="Auto"  Grid.Row="1" VerticalAlignment="Top" Foreground="{DynamicResource ForegroundColor}">
                         <Grid >
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>                                
+                                <RowDefinition Height="Auto"/>
                                 <RowDefinition/>
                             </Grid.RowDefinitions>
-                            <TextBlock x:Name="AboutTextBlock" Height="auto" TextWrapping="Wrap" Margin="5,2,3,0" VerticalAlignment="Top" Grid.Row="0"/>
+                            <TextBlock x:Name="AboutTextBlock" Height="auto" TextWrapping="Wrap" Margin="5,2,3,0" VerticalAlignment="Top" Grid.Row="0" Foreground="{DynamicResource ForegroundColor}"/>
                             <StackPanel Orientation =" Horizontal" Grid.Row="1">
-                                <TextBlock  Text="More Info:"  Height="auto" TextWrapping="Wrap" Margin="5,2,3,0" VerticalAlignment="Top"/>
-                                <TextBlock x:Name="AboutLinksTextBlock1" Height="auto" TextWrapping="Wrap" Margin="5,2,3,0" VerticalAlignment="Top">
+                                <TextBlock  Text="More Info:"  Height="auto" TextWrapping="Wrap" Margin="5,2,3,0" VerticalAlignment="Top" Foreground="{DynamicResource ForegroundColor}"/>
+                                <TextBlock x:Name="AboutLinksTextBlock1" Height="auto" TextWrapping="Wrap" Margin="5,2,3,0" VerticalAlignment="Top" Foreground="{DynamicResource ForegroundColor}">
                                     <Hyperlink NavigateUri="http://www.KnownShippable.com" RequestNavigate="Hyperlink_RequestNavigate">
                                         http://www.knownshippable.com
                                     </Hyperlink>
                                 </TextBlock>
                             </StackPanel>
                             <StackPanel Orientation = "Horizontal" Grid.Row="2">
-                                <TextBlock  Text="GitHub:"  Height="auto" TextWrapping="Wrap" Margin="5,2,3,0" VerticalAlignment="Top" />                                
+                                <TextBlock  Text="GitHub:"  Height="auto" TextWrapping="Wrap" Margin="5,2,3,0" VerticalAlignment="Top" Foreground="{DynamicResource ForegroundColor}" />
                                 <TextBlock x:Name="AboutLinksTextBlock2" Height="auto" TextWrapping="Wrap" Margin="5,2,3,0" VerticalAlignment="Top">
                                         <Hyperlink NavigateUri="https://github.com/yass007/FASTBuildMonitor" RequestNavigate="Hyperlink_RequestNavigate">
                                             https://github.com/yass007/FASTBuildMonitor
