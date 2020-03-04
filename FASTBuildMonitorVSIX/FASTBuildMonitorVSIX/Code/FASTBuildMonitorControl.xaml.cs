@@ -97,6 +97,9 @@ namespace FASTBuildMonitorVSIX
 
             OutputWindowComboBox.SelectionChanged += OutputWindowComboBox_SelectionChanged;
 
+            SettingsGraphsCheckBox.IsChecked = LoadSetting(nameof(SettingsGraphsCheckBox));
+            MiniBarsModeCheckBox.IsChecked = LoadSetting(nameof(MiniBarsModeCheckBox));
+
             Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(() =>
             {
                 //update timer
@@ -110,16 +113,35 @@ namespace FASTBuildMonitorVSIX
         /* Settings Tab Check boxes */
         private void checkBox_Changed(object sender, RoutedEventArgs e)
         {
-            _systemPerformanceGraphs.SetVisibility((bool)SettingsGraphsCheckBox.IsChecked);
+            var checkBox = sender as CheckBox;
+            if (checkBox == null)
+                return;
 
-            bool miniBarsChecked = MiniBarsModeCheckBox.IsChecked != null && (bool)MiniBarsModeCheckBox.IsChecked;
-            if (MiniBarsActive != miniBarsChecked)
+            bool checkBoxChecked = (bool)checkBox.IsChecked;
+
+            switch (checkBox.Name)
             {
-                MiniBarsActive = miniBarsChecked;
+                case nameof(SettingsGraphsCheckBox):
+                    _systemPerformanceGraphs.SetVisibility(checkBoxChecked);
+                    break;
 
-                BuildEvent.InitOrUpdateRaceBrushes();
-                SetConditionalRenderUpdateFlag(true);
+                case nameof(MiniBarsModeCheckBox):
+                    {
+                        if (MiniBarsActive != checkBoxChecked)
+                        {
+                            MiniBarsActive = checkBoxChecked;
+
+                            BuildEvent.InitOrUpdateRaceBrushes();
+                            SetConditionalRenderUpdateFlag(true);
+                        }
+                    }
+                    break;
+
+                default:
+                    throw new NotImplementedException($"Implement handling of checkbox {checkBox.Name}");
             }
+
+            SaveSetting(checkBox.Name, checkBoxChecked);
         }
 
         /* Output Window ESC */
@@ -202,6 +224,33 @@ namespace FASTBuildMonitorVSIX
                     }
                 }
             }
+        }
+
+        private void SaveSetting(string settingName, bool enabled)
+        {
+            var softwareKey = Microsoft.Win32.Registry.CurrentUser.OpenSubKey("Software", true);
+            if (softwareKey == null)
+                return;
+
+            var key = softwareKey.OpenSubKey("FastBuildMonitor", true);
+            if (key == null)
+            {
+                softwareKey.CreateSubKey("FastBuildMonitor");
+                key = softwareKey.OpenSubKey("FastBuildMonitor", true);
+            }
+
+            key?.SetValue(settingName, enabled ? 1 : 0);
+        }
+
+        private bool LoadSetting(string settingName)
+        {
+            var softwareKey = Microsoft.Win32.Registry.CurrentUser.OpenSubKey("Software", true);
+
+            var key = softwareKey?.OpenSubKey("FastBuildMonitor", true);
+            if (key == null)
+                return false;
+
+            return ((int)key.GetValue(settingName, 0)) == 1;
         }
 
         /* Output Window Filtering & Combo box management */
