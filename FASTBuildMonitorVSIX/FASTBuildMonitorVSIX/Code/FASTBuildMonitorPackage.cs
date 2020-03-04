@@ -166,12 +166,15 @@ namespace FASTBuildMonitorVSIX
                 // get ExtensionManager
                 IVsExtensionManager manager = GetService(typeof(SVsExtensionManager)) as IVsExtensionManager;
                 // get your extension by Product Id
-                IInstalledExtension myExtension = manager.GetInstalledExtension("FASTBuildMonitorVSIX.44bf85a5-7635-4a2e-86d7-7b7f3bf757a8");
-                // get current version
-                outInfo._version = myExtension.Header.Version;
-                outInfo._authors = myExtension.Header.Author;
-                outInfo._packageName = myExtension.Header.Name;
-                outInfo._moreInfoURL = myExtension.Header.MoreInfoUrl.OriginalString;
+                IInstalledExtension myExtension = manager?.GetInstalledExtension("FASTBuildMonitorVSIX.44bf85a5-7635-4a2e-86d7-7b7f3bf757a8");
+                if (myExtension != null)
+                {
+                    // get current version
+                    outInfo._version = myExtension.Header.Version;
+                    outInfo._authors = myExtension.Header.Author;
+                    outInfo._packageName = myExtension.Header.Name;
+                    outInfo._moreInfoURL = myExtension.Header.MoreInfoUrl.OriginalString;
+                }
             }
             catch (System.Exception ex)
             {
