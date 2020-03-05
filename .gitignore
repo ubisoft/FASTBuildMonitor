@@ -2,10 +2,12 @@
 # This .gitignore file was automatically created by Microsoft(R) Visual Studio.
 ################################################################################
 
-/FASTBuildMonitorVSIX/FASTBuildMonitorStandalone/bin
+/FASTBuildMonitorVSIX/FASTBuildMonitor/bin
 /FASTBuildMonitorVSIX/FASTBuildMonitorVSIX/bin
+/FASTBuildMonitorVSIX/FASTBuildMonitorStandalone/bin
 /FASTBuildMonitorVSIX/.vs
 /FASTBuildMonitorVSIX/FASTBuildMonitorVSIX/lib
+/FASTBuildMonitorVSIX/FASTBuildMonitor/obj
 /FASTBuildMonitorVSIX/FASTBuildMonitorVSIX/obj
 /FASTBuildMonitorVSIX/FASTBuildMonitorStandalone/obj
 

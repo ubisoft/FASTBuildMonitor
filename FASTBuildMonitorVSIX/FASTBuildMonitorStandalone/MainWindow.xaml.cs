@@ -1,19 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
-using FASTBuildMonitorVSIX;
-using Hardcodet.Wpf.TaskbarNotification;
 
 namespace FASTBuildMonitorStandalone
 {
@@ -28,7 +15,11 @@ namespace FASTBuildMonitorStandalone
             Window = this;
             InitializeComponent();
 
-            this.Content = new FASTBuildMonitorVSIX.FASTBuildMonitorControl();
+            this.Content = new FASTBuildMonitor.FASTBuildMonitorControl(
+                "FASTBuildMonitor Standalone",
+                version: "?", // TODO: retrieve those from AssemblyInfo
+                authors: "?"
+            );
 
             this.StateChanged += Window_StateChanged;
         }
@@ -39,7 +30,7 @@ namespace FASTBuildMonitorStandalone
             {
                 this.ShowInTaskbar = false;
             }
-            else 
+            else
             {
                 this.ShowInTaskbar = true;
             }
@@ -64,7 +55,11 @@ namespace FASTBuildMonitorStandalone
             return true;
         }
 
-        public event EventHandler CanExecuteChanged;
+        public event EventHandler CanExecuteChanged
+        {
+            add { }
+            remove { }
+        }
     }
 
 }

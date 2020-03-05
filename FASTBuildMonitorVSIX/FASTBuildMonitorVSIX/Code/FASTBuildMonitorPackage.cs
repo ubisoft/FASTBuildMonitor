@@ -4,19 +4,11 @@
 //------------------------------------------------------------------------------
 
 using System;
-using System.ComponentModel.Design;
-using System.Diagnostics;
-using Microsoft.VisualStudio.ExtensionManager;
 using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
 using System.Runtime.InteropServices;
-using Microsoft.VisualStudio;
-using Microsoft.VisualStudio.OLE.Interop;
-using Microsoft.VisualStudio.Shell;
-using Microsoft.VisualStudio.Shell.Interop;
-using Microsoft.Win32;
 using EnvDTE;
 using EnvDTE80;
+using Microsoft.VisualStudio.Shell;
 
 namespace FASTBuildMonitorVSIX
 {
@@ -40,19 +32,14 @@ namespace FASTBuildMonitorVSIX
     [PackageRegistration(UseManagedResourcesOnly = true)]
     [InstalledProductRegistration("#110", "#112", "1.0", IconResourceID = 400)] // Info on this package for Help/About
     [ProvideMenuResource("Menus.ctmenu", 1)]
-    [ProvideToolWindow(typeof(FASTBuildMonitor))]
-    [Guid(FASTBuildMonitorPackage.PackageGuidString)]
+    [ProvideToolWindow(typeof(FASTBuildMonitorPane))]
+    [Guid(PackageGuids.guidFASTBuildMonitorPackageString)]
     [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1650:ElementDocumentationMustBeSpelledCorrectly", Justification = "pkgdef, VS and vsixmanifest are valid VS terms")]
     public sealed class FASTBuildMonitorPackage : Package
     {
         public DTE2 _dte;
 
         public static FASTBuildMonitorPackage _instance = null;
-
-        /// <summary>
-        /// FASTBuildMonitorPackage GUID string.
-        /// </summary>
-        public const string PackageGuidString = "73de7c44-188b-45d3-aab2-19af8724c5c9";
 
         /// <summary>
         /// Initializes a new instance of the <see cref="FASTBuildMonitor"/> class.
@@ -78,103 +65,29 @@ namespace FASTBuildMonitorVSIX
 
             _instance = this;
 
+            ThreadHelper.ThrowIfNotOnUIThread();
             _dte = (DTE2)base.GetService(typeof(DTE));
-        }
-
-        public static int count = 0;
-
-        public void ListWindows()
-        {
-            OutputWindow outWindow = _dte.ToolWindows.OutputWindow;
-            outWindow.Parent.AutoHides = false;
-            outWindow.Parent.Activate();
-
-            //string test = window.ActivePane.Name;
-
-            OutputWindowPane buildPane = null;
-            try
-            {
-                buildPane = outWindow.OutputWindowPanes.Item("Build");
-            }
-            catch
-            {
-                buildPane = outWindow.OutputWindowPanes.Add("Build");
-            }
-            finally
-            {
-                //buildPane.Clear();
-            }
-
-
-
-            for (int i = count; i < count + 20; ++i)
-            {
-                buildPane.OutputString("Line " + i + "\n");
-            }
-
-
-            buildPane.Activate();
-
-            try
-            {
-                if (buildPane.TextDocument != null)
-                {
-                    TextDocument doc = buildPane.TextDocument;
-                    TextSelection sel = doc.Selection;
-
-                    sel.StartOfDocument(false);
-                    sel.EndOfDocument(true);
-
-                    count += 20;
-
-
-                    sel.GotoLine(count -5 );
-
-
-                    try
-                    {
-                        sel.ActivePoint.TryToShow(vsPaneShowHow.vsPaneShowCentered, null);
-                    }
-                    catch (System.Exception ex)
-                    {
-                        Console.WriteLine("Exception! " + ex.ToString());
-                    }
-                }
-            }
-            catch (System.Exception ex)
-            {
-                Console.WriteLine("Exception! " + ex.ToString());
-            }
         }
 
         public class VSIXPackageInformation
         {
-            public Version _version = null;
+            public string _version;
             public string _packageName;
-            public string _moreInfoURL;
             public string _authors;
         }
 
-        public VSIXPackageInformation GetCurrentVSIXPackageInformation()
+        public static VSIXPackageInformation GetCurrentVSIXPackageInformation()
         {
             VSIXPackageInformation outInfo = null;
 
             try
             {
-                outInfo = new VSIXPackageInformation();
-
-                // get ExtensionManager
-                IVsExtensionManager manager = GetService(typeof(SVsExtensionManager)) as IVsExtensionManager;
-                // get your extension by Product Id
-                IInstalledExtension myExtension = manager?.GetInstalledExtension("FASTBuildMonitorVSIX.44bf85a5-7635-4a2e-86d7-7b7f3bf757a8");
-                if (myExtension != null)
+                outInfo = new VSIXPackageInformation
                 {
-                    // get current version
-                    outInfo._version = myExtension.Header.Version;
-                    outInfo._authors = myExtension.Header.Author;
-                    outInfo._packageName = myExtension.Header.Name;
-                    outInfo._moreInfoURL = myExtension.Header.MoreInfoUrl.OriginalString;
-                }
+                    _version = Vsix.Version,
+                    _authors = Vsix.Author,
+                    _packageName = Vsix.Name,
+                };
             }
             catch (System.Exception ex)
             {
@@ -183,9 +96,6 @@ namespace FASTBuildMonitorVSIX
 
             return outInfo;
         }
-
-
-
     }
 
     #endregion

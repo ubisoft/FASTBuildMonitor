@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FASTBuildMonitorVSIX", "FAS
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FASTBuildMonitorStandalone", "FASTBuildMonitorStandalone\FASTBuildMonitorStandalone.csproj", "{D15FA9F3-2B94-495E-A53A-576DFBA6D1F3}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FASTBuildMonitor", "FASTBuildMonitor\FASTBuildMonitor.csproj", "{3AA63C05-2341-4E72-ADBC-22C33341EC6E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{D15FA9F3-2B94-495E-A53A-576DFBA6D1F3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D15FA9F3-2B94-495E-A53A-576DFBA6D1F3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D15FA9F3-2B94-495E-A53A-576DFBA6D1F3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3AA63C05-2341-4E72-ADBC-22C33341EC6E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3AA63C05-2341-4E72-ADBC-22C33341EC6E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3AA63C05-2341-4E72-ADBC-22C33341EC6E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3AA63C05-2341-4E72-ADBC-22C33341EC6E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
