@@ -65,6 +65,10 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(BuildingInsideVisualStudio)' != 'true'">
+    <!-- This property disables extension deployment for command line builds; required for AppVeyor -->
+    <DeployExtension>False</DeployExtension>
+  </PropertyGroup>
   <ItemGroup>
     <Compile Include="Code\FASTBuildMonitorPane.cs" />
     <Compile Include="Code\FASTBuildMonitorCommand.cs" />
