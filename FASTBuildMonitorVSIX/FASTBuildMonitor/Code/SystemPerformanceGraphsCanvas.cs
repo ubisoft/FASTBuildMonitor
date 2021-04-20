@@ -399,6 +399,9 @@ namespace FASTBuildMonitor
 
                     int samplesIndex = 0;
 
+                    // Sort the samples as sometimes fastbuild will write out of orders samples(writes are multithreaded)
+                    _samples.Sort((a, b) => a._time.CompareTo(b._time));
+
                     while (totalTimeMS <= timeLimitMS && samplesIndex < _samples.Count)
                     {
                         int subStepSamplesCount = 0;
