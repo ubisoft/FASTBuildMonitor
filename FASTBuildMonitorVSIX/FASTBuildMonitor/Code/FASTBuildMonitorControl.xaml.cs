@@ -243,10 +243,10 @@ namespace FASTBuildMonitor
             _timeBar.UpdateTheme(Theme);
             _localHost?.UpdateTheme(Theme);
 
-            foreach (DictionaryEntry entry in _hosts)
+            foreach (var entry in _hosts)
             {
-                var host = entry.Value as BuildHost;
-                host?.UpdateTheme(Theme);
+                var host = entry.Value;
+                host.UpdateTheme(Theme);
             }
         }
 
@@ -894,9 +894,9 @@ namespace FASTBuildMonitor
             }
 
             int numCores = 0;
-            foreach (DictionaryEntry entry in _hosts)
+            foreach (var entry in _hosts)
             {
-                BuildHost host = entry.Value as BuildHost;
+                BuildHost host = entry.Value;
 
                 if (host._name.Contains(_cLocalHostName))
                 {
@@ -2197,7 +2197,7 @@ namespace FASTBuildMonitor
         const string _cLocalHostName = "local";
         const string _cPrepareBuildStepsText = "Preparing Build Steps";
         bool _bPreparingBuildsteps = false;
-        Hashtable _hosts = new Hashtable();
+        Dictionary<string, BuildHost>  _hosts = new Dictionary<string, BuildHost>();
         BuildHost _localHost = null;
 
 
@@ -2421,9 +2421,9 @@ namespace FASTBuildMonitor
 			}
 
 			// Stop all the active events currently running
-			foreach (DictionaryEntry entry in _hosts)
+			foreach (var entry in _hosts)
             {
-                BuildHost host = entry.Value as BuildHost;
+                BuildHost host = entry.Value;
                 foreach (CPUCore core in host._cores)
                 {
                     core.UnScheduleEvent(timeStamp, _cPrepareBuildStepsText, BuildEventState.TIMEOUT, false, "", true);
@@ -2478,9 +2478,9 @@ namespace FASTBuildMonitor
 			// Find out if this new Job is local and is racing another remote one
 			if(host.bLocalHost)
 			{
-				foreach (DictionaryEntry entry in _hosts)
+				foreach (var entry in _hosts)
 				{
-					BuildHost otherHost = entry.Value as BuildHost;
+					BuildHost otherHost = entry.Value;
 
 					if(otherHost != host)
 					{
@@ -2516,9 +2516,9 @@ namespace FASTBuildMonitor
 
             BuildEventState jobResult = TranslateBuildEventState(jobResultString);
 
-            foreach (DictionaryEntry entry in _hosts)
+            foreach (var entry in _hosts)
             {
-                BuildHost host = entry.Value as BuildHost;
+                BuildHost host = entry.Value;
 								
                 host.OnCompleteEvent(timeStamp, eventName, hostName, jobResult, eventOutputMessages);
             }
@@ -2589,9 +2589,9 @@ namespace FASTBuildMonitor
 
             if (!_viewport.Equals(newViewport))
             {
-                foreach (DictionaryEntry entry in _hosts)
+                foreach (var entry in _hosts)
                 {
-                    BuildHost host = entry.Value as BuildHost;
+                    BuildHost host = entry.Value;
                     foreach (CPUCore core in host._cores)
                     {
                         core.InvalidateVisual();
@@ -2606,12 +2606,10 @@ namespace FASTBuildMonitor
         {
             HitTestResult result = null;
 
-            foreach (DictionaryEntry entry in _hosts)
+            foreach (var entry in _hosts)
             {
-                BuildHost host = entry.Value as BuildHost;
-
+                BuildHost host = entry.Value;
                 result = host.HitTest(mousePosition);
-
                 if (result != null)
                 {
                     break;
@@ -2634,11 +2632,10 @@ namespace FASTBuildMonitor
             mousePosition.X += EventsScrollViewer.HorizontalOffset;
             mousePosition.Y += EventsScrollViewer.VerticalOffset;
 
-            foreach (DictionaryEntry entry in _hosts)
+            foreach (var entry in _hosts)
             {
-                BuildHost host = entry.Value as BuildHost;
-
-                if (host.UpdateToolTip(mousePosition))
+                BuildHost host = entry.Value;
+                 if (host.UpdateToolTip(mousePosition))
                 {
                     break;
                 }
@@ -2665,11 +2662,10 @@ namespace FASTBuildMonitor
                 _localHost.RenderUpdate(X, ref Y);
             }
 
-            foreach (DictionaryEntry entry in _hosts)
+            foreach (var entry in _hosts)
             {
-                BuildHost host = entry.Value as BuildHost;
-
-                if (host != _localHost)
+                BuildHost host = entry.Value;
+                 if (host != _localHost)
                 {
                     host.RenderUpdate(X, ref Y);
                 }
