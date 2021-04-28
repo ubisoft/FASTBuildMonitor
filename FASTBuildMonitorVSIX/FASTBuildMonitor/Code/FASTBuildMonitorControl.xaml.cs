@@ -2516,13 +2516,20 @@ namespace FASTBuildMonitor
 
             BuildEventState jobResult = TranslateBuildEventState(jobResultString);
 
-            foreach (var entry in _hosts)
+            if (jobResult == BuildEventState.TIMEOUT)
             {
-                BuildHost host = entry.Value;
-								
+                // Timeout event must only update the affected host or this will completely screw up the graph
+                BuildHost host = _hosts[hostName];
                 host.OnCompleteEvent(timeStamp, eventName, hostName, jobResult, eventOutputMessages);
             }
-
+            else
+            {
+                foreach (var entry in _hosts)
+                {
+                    BuildHost host = entry.Value;
+                    host.OnCompleteEvent(timeStamp, eventName, hostName, jobResult, eventOutputMessages);
+                }
+            }
             UpdateBuildStatus(jobResult);
         }
 
