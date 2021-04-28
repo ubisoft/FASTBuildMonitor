@@ -1,4 +1,4 @@
-﻿//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 // Copyright 2017 Yassine Riahi and Liam Flookes. 
 // Provided under a MIT License, see license file on github.
 //------------------------------------------------------------------------------
@@ -1071,9 +1071,10 @@ namespace FASTBuildMonitor
 
         private static Int64 RegisterNewTimeStamp(Int64 fileTime)
         {
-            _latestTimeStampMS = ConvertFileTimeToMS(fileTime);
+            Int64 convertedTime = ConvertFileTimeToMS(fileTime);
+            _latestTimeStampMS = Math.Max(_latestTimeStampMS, convertedTime);
 
-            return _latestTimeStampMS;
+            return convertedTime;
         }
 
         public class CPUCore : Canvas
