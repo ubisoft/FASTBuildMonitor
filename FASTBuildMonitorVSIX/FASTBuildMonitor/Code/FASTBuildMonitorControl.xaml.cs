@@ -893,22 +893,26 @@ namespace FASTBuildMonitor
                     break;
             }
 
-            int numCores = 0;
+            int workerCount = 0;
+            int workerCoresCount = 0;
+            int localCoreCount = 0;
+
             foreach (var entry in _hosts)
             {
                 BuildHost host = entry.Value;
 
                 if (host._name.Contains(_cLocalHostName))
                 {
-                    numCores += host._cores.Count;
+                    localCoreCount += host._cores.Count;
                 }
                 else
                 {
-                    numCores += host._cores.Count - 1;
+                    workerCoresCount += host._cores.Count;
+                    workerCount++;
                 }
             }
 
-            StatusBarDetails.Text = string.Format("{0} Agents - {1} Cores", _hosts.Count, numCores);
+            StatusBarDetails.Text = string.Format("{0} workers - {1} remote cores - {2} local cores", workerCount, workerCoresCount, localCoreCount);
         }
 
         public enum eBuildStatus
