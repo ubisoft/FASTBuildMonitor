@@ -784,15 +784,21 @@ namespace FASTBuildMonitor
                 _fileStream.Seek(0, SeekOrigin.Begin);
 
                 int numBytesRead = _fileStream.Read(buffer, 0, numBytesToCompare);
-                Debug.Assert(numBytesRead == numBytesToCompare, "Could not read the expected amount of data from the log file...!");
-
-                for (int i = 0; i < numBytesToCompare; ++i)
+                if (numBytesRead == numBytesToCompare)
                 {
-                    if (buffer[i] != _fileBuffer[i])
+                    for (int i = 0; i < numBytesToCompare; ++i)
                     {
-                        bFileChanged = true;
-                        break;
+                        if (buffer[i] != _fileBuffer[i])
+                        {
+                            bFileChanged = true;
+                            break;
+                        }
                     }
+                }
+                else
+                {
+                    // File has likely been truncated because a new build has started.
+                    bFileChanged = true;
                 }
             }
 
