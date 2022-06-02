@@ -8,6 +8,11 @@ using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using EnvDTE;
 using EnvDTE80;
+#if FBM_LEGACY
+using FASTBuildMonitorVSIX.Manifests.Legacy;
+#else
+using FASTBuildMonitorVSIX.Manifests;
+#endif
 using Microsoft.VisualStudio.Shell;
 
 namespace FASTBuildMonitorVSIX
@@ -52,7 +57,7 @@ namespace FASTBuildMonitorVSIX
             // initialization is the Initialize method.
         }
 
-        #region Package Members
+#region Package Members
 
         /// <summary>
         /// Initialization of the package; this method is called right after the package is sited, so this is the place
@@ -98,5 +103,5 @@ namespace FASTBuildMonitorVSIX
         }
     }
 
-    #endregion
+#endregion
 }
